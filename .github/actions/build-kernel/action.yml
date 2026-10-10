@@ -890,6 +890,15 @@ runs:
         cd "$KERNEL_PLATFORM_FOLDER"
         echo "Adding KernelSU Next..."
         git clone --filter=blob:none https://github.com/pershoot/KernelSU-Next.git -b dev-susfs KernelSU-Next
+        # compat shim: susfs-patched kernel selinux (hooks.c/selinuxfs.c) expects a global
+        # `struct selinux_state fake_state` normally provided by 10_enable_susfs_for_ksu.patch;
+        # pershoot's fork lacks it, so define + initialize it here (mirrors old susfs ksu patch)
+        if ! grep -q "struct selinux_state fake_state" KernelSU-Next/kernel/feature/selinux_hide.c; then
+          sed -i 's|^bool ksu_selinux_hide_running __read_mostly = false;$|&\nstruct selinux_state fake_state;|' KernelSU-Next/kernel/feature/selinux_hide.c
+          sed -i 's|^    security_dump_masked_av_fn = find_kernel_symbol_exact("security_dump_masked_av");|#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 6, 0)\n    fake_state.initialized = true;\n    fake_state.policy = backup_sepolicy;\n#endif\n&|' KernelSU-Next/kernel/feature/selinux_hide.c
+        fi
+        grep -q "struct selinux_state fake_state;" KernelSU-Next/kernel/feature/selinux_hide.c || { echo "::error::fake_state shim failed"; exit 1; }
+        grep -q "fake_state.initialized = true" KernelSU-Next/kernel/feature/selinux_hide.c || { echo "::error::fake_state init shim failed"; exit 1; }
         DRIVER_DIR="$COMMON_KERNEL_FOLDER/drivers"
         ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$KERNEL_PLATFORM_FOLDER/KernelSU-Next/kernel")" "$DRIVER_DIR/kernelsu"
         grep -q "kernelsu" "$DRIVER_DIR/Makefile" || printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> "$DRIVER_DIR/Makefile"
