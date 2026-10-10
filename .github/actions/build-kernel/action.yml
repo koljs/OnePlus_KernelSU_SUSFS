@@ -890,6 +890,10 @@ runs:
         cd "$KERNEL_PLATFORM_FOLDER"
         echo "Adding KernelSU Next..."
         git clone --filter=blob:none https://github.com/pershoot/KernelSU-Next.git -b dev-susfs KernelSU-Next
+        DRIVER_DIR="$COMMON_KERNEL_FOLDER/drivers"
+        ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$KERNEL_PLATFORM_FOLDER/KernelSU-Next/kernel")" "$DRIVER_DIR/kernelsu"
+        grep -q "kernelsu" "$DRIVER_DIR/Makefile" || printf '\nobj-$(CONFIG_KSU) += kernelsu/\n' >> "$DRIVER_DIR/Makefile"
+        grep -q 'drivers/kernelsu/Kconfig' "$DRIVER_DIR/Kconfig" || sed -i "/endmenu/i\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_DIR/Kconfig"
         cd KernelSU-Next/kernel
         
         COMMITS_COUNT=$(/usr/bin/git rev-list --count HEAD)
