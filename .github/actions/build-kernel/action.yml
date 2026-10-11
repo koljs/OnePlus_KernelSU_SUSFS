@@ -951,6 +951,7 @@ runs:
         CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y
         CONFIG_KSU_SUSFS_SUS_MAP=y
         CONFIG_KSU_SUSFS_OPEN_REDIRECT=y
+        CONFIG_CGROUP_PIDS=y
         EOF
         
         echo "KSUN" >> "${ARTIFACTS_FOLDER}/${OP_MODEL}_${OP_OS_VERSION}.txt"
@@ -2034,9 +2035,10 @@ runs:
           -e KSU_SUSFS -e KSU_SUSFS_SUS_PATH -e KSU_SUSFS_SUS_MOUNT \
           -e KSU_SUSFS_SUS_KSTAT -e KSU_SUSFS_SPOOF_UNAME -e KSU_SUSFS_ENABLE_LOG \
           -e KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS -e KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG \
-          -e KSU_SUSFS_SUS_MAP -e KSU_SUSFS_OPEN_REDIRECT
+          -e KSU_SUSFS_SUS_MAP -e KSU_SUSFS_OPEN_REDIRECT \
+          -e CGROUP_PIDS
         make LD="$COMMON_KERNEL_FOLDER/ld-wrapper" HOSTLD="$COMMON_KERNEL_FOLDER/ld-wrapper" O="$OUT" olddefconfig
-        for ksu_opt in CONFIG_KSU CONFIG_KSU_SUSFS CONFIG_KSU_SUSFS_SUS_MOUNT CONFIG_KSU_SUSFS_SUS_KSTAT; do
+        for ksu_opt in CONFIG_KSU CONFIG_KSU_SUSFS CONFIG_KSU_SUSFS_SUS_MOUNT CONFIG_KSU_SUSFS_SUS_KSTAT CONFIG_CGROUP_PIDS; do
           if ! grep -q "^${ksu_opt}=y" "$OUT/.config"; then
             echo "::error::HARD CHECK FAILED: ${ksu_opt} is not =y in the final .config"
             exit 1
