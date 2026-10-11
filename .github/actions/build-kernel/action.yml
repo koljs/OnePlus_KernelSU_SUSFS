@@ -889,7 +889,7 @@ runs:
         echo "::group::Add KernelSU Next"
         cd "$KERNEL_PLATFORM_FOLDER"
         echo "Adding KernelSU Next..."
-        git clone --filter=blob:none https://github.com/pershoot/KernelSU-Next.git -b dev-susfs KernelSU-Next
+        git clone --filter=blob:none https://github.com/koljs/KernelSU-Next.git -b dev-susfs-pin KernelSU-Next
         # compat shim: susfs-patched kernel selinux (hooks.c/selinuxfs.c) expects a global
         # `struct selinux_state fake_state` normally provided by 10_enable_susfs_for_ksu.patch;
         # pershoot's fork lacks it, so define + initialize it here (mirrors old susfs ksu patch)
